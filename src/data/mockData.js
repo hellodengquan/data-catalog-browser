@@ -928,3 +928,218 @@ export const approvalStatusMap = {
   'rejected': { label: '已拒绝', color: '#ef4444', icon: 'XCircle' },
   'expired': { label: '已过期', color: '#6b7280', icon: 'AlertCircle' }
 }
+
+export const fieldQualityMetrics = {
+  'ds-001': {
+    'user_id': { completeness: 0.99, accuracy: 0.98, uniqueness: 1.0, timeliness: 0.95, overallScore: 98 },
+    'order_id': { completeness: 1.0, accuracy: 0.99, uniqueness: 1.0, timeliness: 0.97, overallScore: 99 },
+    'product_id': { completeness: 0.98, accuracy: 0.96, uniqueness: 0.99, timeliness: 0.94, overallScore: 97 },
+    'purchase_time': { completeness: 1.0, accuracy: 0.99, uniqueness: 0.92, timeliness: 0.98, overallScore: 97 },
+    'pay_amount': { completeness: 0.97, accuracy: 0.95, uniqueness: 0.88, timeliness: 0.96, overallScore: 94 }
+  },
+  'ds-006': {
+    'order_id': { completeness: 1.0, accuracy: 0.99, uniqueness: 1.0, timeliness: 0.98, overallScore: 99 },
+    'user_id': { completeness: 0.99, accuracy: 0.97, uniqueness: 0.94, timeliness: 0.96, overallScore: 97 },
+    'total_amount': { completeness: 0.98, accuracy: 0.96, uniqueness: 0.85, timeliness: 0.95, overallScore: 94 },
+    'pay_amount': { completeness: 0.97, accuracy: 0.95, uniqueness: 0.82, timeliness: 0.94, overallScore: 92 },
+    'order_status': { completeness: 1.0, accuracy: 0.99, uniqueness: 0.75, timeliness: 0.98, overallScore: 93 },
+    'create_time': { completeness: 1.0, accuracy: 0.99, uniqueness: 0.91, timeliness: 0.97, overallScore: 97 }
+  },
+  'ds-012': {
+    'user_id': { completeness: 1.0, accuracy: 0.99, uniqueness: 1.0, timeliness: 0.96, overallScore: 99 },
+    'phone': { completeness: 0.88, accuracy: 0.85, uniqueness: 0.97, timeliness: 0.82, overallScore: 88 },
+    'email': { completeness: 0.92, accuracy: 0.90, uniqueness: 0.98, timeliness: 0.88, overallScore: 92 },
+    'register_time': { completeness: 1.0, accuracy: 0.98, uniqueness: 0.93, timeliness: 0.96, overallScore: 97 }
+  }
+}
+
+export const datasetScores = {
+  'ds-001': { overall: 96, quality: 95, usability: 97, completeness: 94, lineageCoverage: 92 },
+  'ds-002': { overall: 82, quality: 78, usability: 85, completeness: 83, lineageCoverage: 80 },
+  'ds-003': { overall: 91, quality: 93, usability: 89, completeness: 90, lineageCoverage: 92 },
+  'ds-004': { overall: 78, quality: 75, usability: 82, completeness: 77, lineageCoverage: 76 },
+  'ds-005': { overall: 88, quality: 86, usability: 90, completeness: 87, lineageCoverage: 90 },
+  'ds-006': { overall: 94, quality: 95, usability: 93, completeness: 92, lineageCoverage: 96 },
+  'ds-007': { overall: 89, quality: 88, usability: 91, completeness: 87, lineageCoverage: 90 },
+  'ds-008': { overall: 75, quality: 72, usability: 78, completeness: 74, lineageCoverage: 76 },
+  'ds-009': { overall: 92, quality: 94, usability: 90, completeness: 91, lineageCoverage: 93 },
+  'ds-010': { overall: 85, quality: 83, usability: 87, completeness: 84, lineageCoverage: 86 },
+  'ds-011': { overall: 90, quality: 92, usability: 88, completeness: 89, lineageCoverage: 91 },
+  'ds-012': { overall: 86, quality: 84, usability: 88, completeness: 85, lineageCoverage: 87 },
+  'ds-013': { overall: 83, quality: 80, usability: 85, completeness: 82, lineageCoverage: 84 },
+  'ds-014': { overall: 88, quality: 87, usability: 89, completeness: 88, lineageCoverage: 90 },
+  'ds-015': { overall: 79, quality: 76, usability: 82, completeness: 78, lineageCoverage: 80 },
+  'ds-016': { overall: 84, quality: 82, usability: 86, completeness: 83, lineageCoverage: 85 },
+  'ds-017': { overall: 93, quality: 94, usability: 92, completeness: 91, lineageCoverage: 95 },
+  'ds-018': { overall: 87, quality: 85, usability: 89, completeness: 86, lineageCoverage: 88 },
+  'ds-019': { overall: 95, quality: 96, usability: 94, completeness: 93, lineageCoverage: 97 }
+}
+
+export const datasetSubscriptions = [
+  { id: 'sub-001', userId: 'u-022', datasetId: 'ds-006', notifyOnSchemaChange: true, notifyOnDataUpdate: true, notifyOnOwnerChange: true, createdAt: '2024-05-20 10:30:00' },
+  { id: 'sub-002', userId: 'u-022', datasetId: 'ds-001', notifyOnSchemaChange: true, notifyOnDataUpdate: false, notifyOnOwnerChange: true, createdAt: '2024-05-22 14:15:00' },
+  { id: 'sub-003', userId: 'u-024', datasetId: 'ds-006', notifyOnSchemaChange: true, notifyOnDataUpdate: true, notifyOnOwnerChange: false, createdAt: '2024-06-01 09:00:00' },
+  { id: 'sub-004', userId: 'u-005', datasetId: 'ds-009', notifyOnSchemaChange: false, notifyOnDataUpdate: true, notifyOnOwnerChange: false, createdAt: '2024-06-05 16:45:00' },
+  { id: 'sub-005', userId: 'u-025', datasetId: 'ds-012', notifyOnSchemaChange: true, notifyOnDataUpdate: true, notifyOnOwnerChange: true, createdAt: '2024-06-10 11:20:00' }
+]
+
+export const changeNotifications = [
+  {
+    id: 'notif-001',
+    datasetId: 'ds-006',
+    type: 'schema_change',
+    title: '主订单表 Schema 变更',
+    content: '新增字段：discount_amount（折扣金额，DECIMAL(10,2)），删除字段：old_pay_method',
+    operatorId: 'u-006',
+    operatorName: '杨洋',
+    createdAt: '2024-06-14 10:30:00',
+    readBy: ['u-024']
+  },
+  {
+    id: 'notif-002',
+    datasetId: 'ds-001',
+    type: 'data_update',
+    title: '用户购买记录数据刷新',
+    content: '2024-06-13 日数据已完成同步，共 128,562 条记录，延迟约 45 分钟',
+    operatorId: 'u-003',
+    operatorName: '王强',
+    createdAt: '2024-06-14 08:15:00',
+    readBy: ['u-022']
+  },
+  {
+    id: 'notif-003',
+    datasetId: 'ds-012',
+    type: 'owner_change',
+    title: '用户画像表负责人变更',
+    content: '负责人从 赵雪（team-user）变更为 胡军（team-user）',
+    operatorId: 'u-025',
+    operatorName: '系统管理员',
+    createdAt: '2024-06-13 17:00:00',
+    readBy: []
+  },
+  {
+    id: 'notif-004',
+    datasetId: 'ds-009',
+    type: 'data_update',
+    title: '商品基础信息质量分提升',
+    content: '字段完整性评分从 82 提升至 94，accuracy 从 78 提升至 87',
+    operatorId: 'u-010',
+    operatorName: '周明',
+    createdAt: '2024-06-12 14:30:00',
+    readBy: ['u-005']
+  },
+  {
+    id: 'notif-005',
+    datasetId: 'ds-006',
+    type: 'schema_change',
+    title: '主订单表字段类型变更',
+    content: 'pay_amount 字段精度从 DECIMAL(10,2) 调整为 DECIMAL(12,2)',
+    operatorId: 'u-006',
+    operatorName: '杨洋',
+    createdAt: '2024-06-11 11:20:00',
+    readBy: ['u-022', 'u-024']
+  }
+]
+
+export const importRecords = [
+  {
+    id: 'imp-001',
+    type: 'metadata',
+    title: '交易域表批量导入',
+    fileName: 'trading_domain_datasets_20240610.xlsx',
+    totalCount: 8,
+    successCount: 7,
+    failedCount: 1,
+    operatorId: 'u-025',
+    operatorName: '系统管理员',
+    status: 'completed',
+    createdAt: '2024-06-10 09:30:00',
+    completedAt: '2024-06-10 09:32:15',
+    errorMessage: null,
+    details: {
+      successful: ['ds-020', 'ds-021', 'ds-022', 'ds-023', 'ds-024', 'ds-025', 'ds-026'],
+      failed: [{ name: 'ds-027', reason: '缺少必要字段 owner' }]
+    }
+  },
+  {
+    id: 'imp-002',
+    type: 'lineage',
+    title: '血缘关系批量导入',
+    fileName: 'lineage_edges_20240612.json',
+    totalCount: 25,
+    successCount: 25,
+    failedCount: 0,
+    operatorId: 'u-006',
+    operatorName: '杨洋',
+    status: 'completed',
+    createdAt: '2024-06-12 15:45:00',
+    completedAt: '2024-06-12 15:45:30',
+    errorMessage: null,
+    details: {
+      successful: ['e-021', 'e-022', 'e-023', 'e-024', 'e-025'],
+      failed: []
+    }
+  },
+  {
+    id: 'imp-003',
+    type: 'metadata',
+    title: '用户域元数据导入',
+    fileName: 'user_domain_mapping.csv',
+    totalCount: 12,
+    successCount: 10,
+    failedCount: 2,
+    operatorId: 'u-014',
+    operatorName: '胡军',
+    status: 'completed',
+    createdAt: '2024-06-08 11:20:00',
+    completedAt: '2024-06-08 11:21:45',
+    errorMessage: '部分记录导入失败',
+    details: {
+      successful: ['ds-030', 'ds-031', 'ds-032'],
+      failed: [
+        { name: 'ds-033', reason: 'sensitivityLevel 无效值：high' },
+        { name: 'ds-034', reason: 'teamId 不存在：team-unknown' }
+      ]
+    }
+  },
+  {
+    id: 'imp-004',
+    type: 'metadata',
+    title: '商品域表结构导入',
+    fileName: 'product_schema_20240615.xlsx',
+    totalCount: 5,
+    successCount: 0,
+    failedCount: 0,
+    operatorId: 'u-010',
+    operatorName: '周明',
+    status: 'processing',
+    createdAt: '2024-06-15 10:00:00',
+    completedAt: null,
+    errorMessage: null,
+    details: {}
+  }
+]
+
+export const importStatusMap = {
+  'pending': { label: '等待中', color: '#6b7280' },
+  'processing': { label: '处理中', color: '#3b82f6' },
+  'completed': { label: '已完成', color: '#10b981' },
+  'failed': { label: '失败', color: '#ef4444' },
+  'partial': { label: '部分成功', color: '#f59e0b' }
+}
+
+export const notificationTypeMap = {
+  'schema_change': { label: 'Schema 变更', color: '#8b5cf6', icon: 'FileEdit' },
+  'data_update': { label: '数据更新', color: '#0ea5e9', icon: 'RefreshCw' },
+  'owner_change': { label: '负责人变更', color: '#f97316', icon: 'UserCog' },
+  'approval': { label: '审批通知', color: '#f59e0b', icon: 'FileCheck' }
+}
+
+export const scoreDimensionLabels = {
+  overall: '综合评分',
+  quality: '数据质量',
+  usability: '易用性',
+  completeness: '元数据完整性',
+  lineageCoverage: '血缘覆盖度'
+}
+

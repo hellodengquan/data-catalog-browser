@@ -97,6 +97,13 @@
       </div>
 
       <div class="header-right">
+        <button class="header-icon-btn" @click="toggleImportPanel" title="批量导入">
+          <Upload :size="18" />
+        </button>
+        <button class="header-icon-btn notification-btn" @click="toggleNotificationPanel" title="通知中心">
+          <Bell :size="18" />
+          <span v-if="unreadNotificationCount > 0" class="notification-dot">{{ unreadNotificationCount }}</span>
+        </button>
         <div class="user-switcher" title="切换用户测试权限">
           <User :size="16" />
           <select v-model="currentUserId" @change="onUserSwitch" class="user-select">
@@ -169,6 +176,27 @@
                 <span class="s-dot" :style="{ background: s.color }"></span>
                 <span class="s-label">{{ s.label }}</span>
                 <span class="s-count">{{ getSensitivityCount(s.key) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-divider"></div>
+
+          <div class="sidebar-section">
+            <div class="section-label">排序方式</div>
+            <div class="sort-list">
+              <div
+                v-for="opt in sortOptions"
+                :key="opt.key"
+                class="sort-item"
+                :class="{ active: sortBy === opt.key }"
+                @click="handleSortChange(opt.key)"
+              >
+                <ArrowUpDown :size="13" />
+                <span class="sort-label">{{ opt.label }}</span>
+                <span v-if="sortBy === opt.key" class="sort-order">
+                  {{ sortOrder === 'desc' ? '↓' : '↑' }}
+                </span>
               </div>
             </div>
           </div>
@@ -252,6 +280,16 @@
               <p class="dataset-desc">{{ selectedDataset.description }}</p>
             </div>
             <div class="dt-right">
+              <button v-if="currentDatasetScore" class="btn ghost score-btn" @click="openQualityTab">
+                <Star :size="14" :style="{ color: qualityScoreService.getScoreColor(currentDatasetScore.overall) }" />
+                {{ currentDatasetScore.overall }} 分
+              </button>
+              <button v-if="!isSubscribedToCurrentDataset" class="btn ghost" @click="handleSubscribeDataset">
+                <BellRing :size="14" /> 订阅变更
+              </button>
+              <button v-else class="btn ghost" @click="handleUnsubscribeDataset">
+                <BellOff :size="14" /> 取消订阅
+              </button>
               <button class="btn ghost" @click="handleExportDataset">
                 <Download :size="14" /> 导出
               </button>
@@ -280,6 +318,15 @@
               <DatasetPreview
                 :dataset="enrichedDataset"
                 :highlightKeyword="effectiveQuery"
+              />
+            </div>
+
+            <div v-if="currentTab === 'quality'" class="tab-pane">
+              <QualityScoreCard
+                v-if="selectedDatasetId"
+                :datasetId="selectedDatasetId"
+                :showTrend="true"
+                :showFieldMetrics="true"
               />
             </div>
 
@@ -355,6 +402,40 @@
           </div>
         </div>
       </main>
+
+      <Teleport to="body">
+        <Transition name="slide">
+          <div v-if="showNotificationPanel" class="global-panel notification-panel-wrapper">
+            <div class="panel-header-bar">
+              <span class="panel-header-title">通知中心</span>
+              <button class="panel-close-btn" @click="showNotificationPanel = false">
+                <X :size="18" />
+              </button>
+            </div>
+            <NotificationPanel @selectDataset="handleNotificationSelectDataset" />
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="slide">
+          <div v-if="showImportPanel" class="global-panel import-panel-wrapper">
+            <div class="panel-header-bar">
+              <span class="panel-header-title">批量元数据导入</span>
+              <button class="panel-close-btn" @click="showImportPanel = false">
+                <X :size="18" />
+              </button>
+            </div>
+            <ImportPanel />
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="fade">
+          <div v-if="showNotificationPanel || showImportPanel" class="overlay-backdrop" @click="showNotificationPanel = false; showImportPanel = false"></div>
+        </Transition>
+      </Teleport>
     </div>
   </div>
 </template>
@@ -386,7 +467,14 @@ import {
   SearchX,
   Tag,
   Clock,
-  Table as TableIcon
+  Table as TableIcon,
+  Bell,
+  Star,
+  Upload,
+  ArrowUpDown,
+  Plus,
+  BellRing,
+  BellOff
 } from 'lucide-vue-next'
 
 import {
@@ -403,9 +491,15 @@ import CategoryTree from './components/CategoryTree.vue'
 import DatasetPreview from './components/DatasetPreview.vue'
 import LineageGraph from './components/LineageGraph.vue'
 import ApprovalPanel from './components/ApprovalPanel.vue'
+import NotificationPanel from './components/NotificationPanel.vue'
+import QualityScoreCard from './components/QualityScoreCard.vue'
+import ImportPanel from './components/ImportPanel.vue'
 
 import { searchEngine, highlightText } from './utils/searchEngine'
 import { permissionService } from './utils/permissionService'
+import { subscriptionService } from './utils/subscriptionService'
+import { qualityScoreService } from './utils/qualityScoreService'
+import { importService } from './utils/importService'
 import {
   exportDatasetToOpenLineage,
   exportLineageToOpenLineage,
@@ -426,13 +520,20 @@ const searchText = ref('')
 const searchSuggestion = ref('')
 const selectedTeamId = ref('all')
 const selectedSensitivity = ref('')
+const sortBy = ref('overall')
+const sortOrder = ref('desc')
+const showNotificationPanel = ref(false)
+const showImportPanel = ref(false)
 
 watch(currentUserId, (uid) => {
   permissionService.switchUser(uid)
+  subscriptionService.switchUser(uid)
+  importService.switchUser(uid)
 })
 
 const tabs = computed(() => [
   { key: 'info', label: '基础信息', icon: markRaw(TableIcon) },
+  { key: 'quality', label: '质量评分', icon: markRaw(Star), badge: getDatasetOverallScore(selectedDatasetId.value) || null },
   { key: 'lineage', label: '血缘关系图', icon: markRaw(GitBranch) },
   { key: 'approvals', label: '审批管理', icon: markRaw(FileCheck), badge: pendingApprovalCount.value || null },
   { key: 'export', label: 'OpenLineage 导出', icon: markRaw(Rocket) }
@@ -782,6 +883,67 @@ watch(searchFocused, (focused) => {
     handleFuseSearch()
   }
 })
+
+const unreadNotificationCount = computed(() =>
+  subscriptionService.getUnreadCount()
+)
+
+const isSubscribedToCurrentDataset = computed(() =>
+  selectedDatasetId.value ? subscriptionService.isSubscribed(selectedDatasetId.value) : false
+)
+
+const currentDatasetScore = computed(() =>
+  selectedDatasetId.value ? qualityScoreService.getDatasetScore(selectedDatasetId.value) : null
+)
+
+const sortOptions = computed(() => qualityScoreService.getSortOptions())
+
+function getDatasetOverallScore(datasetId) {
+  if (!datasetId) return null
+  const score = qualityScoreService.getDatasetScore(datasetId)
+  return score.overall
+}
+
+function handleSortChange(key) {
+  qualityScoreService.setSortBy(key)
+  sortBy.value = qualityScoreService.sortBy
+  sortOrder.value = qualityScoreService.sortOrder
+}
+
+function handleSubscribeDataset() {
+  if (!selectedDatasetId.value) return
+  const result = subscriptionService.subscribe(selectedDatasetId.value)
+  if (result.success) {
+    alert(result.isNew ? '订阅成功！' : '已更新订阅设置')
+  }
+}
+
+function handleUnsubscribeDataset() {
+  if (!selectedDatasetId.value) return
+  if (confirm('确定要取消订阅此数据集吗？')) {
+    subscriptionService.unsubscribe(selectedDatasetId.value)
+  }
+}
+
+function toggleNotificationPanel() {
+  showNotificationPanel.value = !showNotificationPanel.value
+  showImportPanel.value = false
+}
+
+function toggleImportPanel() {
+  showImportPanel.value = !showImportPanel.value
+  showNotificationPanel.value = false
+}
+
+function handleNotificationSelectDataset(datasetId) {
+  selectedDatasetId.value = datasetId
+  showNotificationPanel.value = false
+  currentTab.value = 'info'
+}
+
+function openQualityTab() {
+  currentTab.value = 'quality'
+}
 </script>
 
 <style scoped>
@@ -1584,5 +1746,166 @@ watch(searchFocused, (focused) => {
   padding: 0 2px;
   border-radius: 2px;
   font-weight: 500;
+}
+
+.empty-hint {
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.header-icon-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f3f4f6;
+  color: #4b5563;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.header-icon-btn:hover {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sort-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sort-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7280;
+  transition: all 0.15s;
+}
+
+.sort-item:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.sort-item.active {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.sort-order {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+.score-btn {
+  gap: 6px;
+}
+
+.global-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 480px;
+  max-width: 100vw;
+  background: var(--bg-primary);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.panel-header-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.panel-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.panel-close-btn:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(100%);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.notification-panel-wrapper :deep(.notification-panel),
+.import-panel-wrapper :deep(.import-panel) {
+  height: 100%;
+  border-radius: 0;
 }
 </style>

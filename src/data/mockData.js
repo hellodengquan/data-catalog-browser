@@ -976,11 +976,11 @@ export const datasetScores = {
 }
 
 export const datasetSubscriptions = [
-  { id: 'sub-001', userId: 'u-022', datasetId: 'ds-006', notifyOnSchemaChange: true, notifyOnDataUpdate: true, notifyOnOwnerChange: true, createdAt: '2024-05-20 10:30:00' },
-  { id: 'sub-002', userId: 'u-022', datasetId: 'ds-001', notifyOnSchemaChange: true, notifyOnDataUpdate: false, notifyOnOwnerChange: true, createdAt: '2024-05-22 14:15:00' },
-  { id: 'sub-003', userId: 'u-024', datasetId: 'ds-006', notifyOnSchemaChange: true, notifyOnDataUpdate: true, notifyOnOwnerChange: false, createdAt: '2024-06-01 09:00:00' },
-  { id: 'sub-004', userId: 'u-005', datasetId: 'ds-009', notifyOnSchemaChange: false, notifyOnDataUpdate: true, notifyOnOwnerChange: false, createdAt: '2024-06-05 16:45:00' },
-  { id: 'sub-005', userId: 'u-025', datasetId: 'ds-012', notifyOnSchemaChange: true, notifyOnDataUpdate: true, notifyOnOwnerChange: true, createdAt: '2024-06-10 11:20:00' }
+  { id: 'sub-001', userId: 'u-022', datasetId: 'ds-006', notifyTypes: ['schema_change', 'data_update', 'owner_change', 'quality_alert'], createdAt: '2024-05-20 10:30:00' },
+  { id: 'sub-002', userId: 'u-022', datasetId: 'ds-001', notifyTypes: ['schema_change', 'owner_change', 'quality_alert'], createdAt: '2024-05-22 14:15:00' },
+  { id: 'sub-003', userId: 'u-024', datasetId: 'ds-006', notifyTypes: ['schema_change', 'data_update', 'quality_alert'], createdAt: '2024-06-01 09:00:00' },
+  { id: 'sub-004', userId: 'u-005', datasetId: 'ds-009', notifyTypes: ['data_update'], createdAt: '2024-06-05 16:45:00' },
+  { id: 'sub-005', userId: 'u-025', datasetId: 'ds-012', notifyTypes: ['schema_change', 'data_update', 'owner_change', 'quality_alert'], createdAt: '2024-06-10 11:20:00' }
 ]
 
 export const changeNotifications = [
@@ -1132,7 +1132,8 @@ export const notificationTypeMap = {
   'schema_change': { label: 'Schema 变更', color: '#8b5cf6', icon: 'FileEdit' },
   'data_update': { label: '数据更新', color: '#0ea5e9', icon: 'RefreshCw' },
   'owner_change': { label: '负责人变更', color: '#f97316', icon: 'UserCog' },
-  'approval': { label: '审批通知', color: '#f59e0b', icon: 'FileCheck' }
+  'approval': { label: '审批通知', color: '#f59e0b', icon: 'FileCheck' },
+  'quality_alert': { label: '质量告警', color: '#ef4444', icon: 'AlertTriangle' }
 }
 
 export const scoreDimensionLabels = {
@@ -1142,4 +1143,471 @@ export const scoreDimensionLabels = {
   completeness: '元数据完整性',
   lineageCoverage: '血缘覆盖度'
 }
+
+export const qualityAlertRules = [
+  {
+    id: 'alert-001',
+    datasetId: 'ds-006',
+    fieldName: 'pay_amount',
+    ruleType: 'completeness',
+    threshold: 0.95,
+    operator: '<',
+    severity: 'critical',
+    enabled: true,
+    notifyChannels: ['email', 'dingtalk'],
+    createdAt: '2024-05-15 10:00:00',
+    lastEvaluatedAt: '2024-06-15 10:30:00'
+  },
+  {
+    id: 'alert-002',
+    datasetId: 'ds-006',
+    fieldName: 'order_id',
+    ruleType: 'uniqueness',
+    threshold: 0.99,
+    operator: '<',
+    severity: 'warning',
+    enabled: true,
+    notifyChannels: ['email'],
+    createdAt: '2024-05-16 14:20:00',
+    lastEvaluatedAt: '2024-06-15 10:30:00'
+  },
+  {
+    id: 'alert-003',
+    datasetId: 'ds-012',
+    fieldName: 'phone',
+    ruleType: 'accuracy',
+    threshold: 0.90,
+    operator: '<',
+    severity: 'warning',
+    enabled: true,
+    notifyChannels: ['email', 'wechat'],
+    createdAt: '2024-05-18 09:30:00',
+    lastEvaluatedAt: '2024-06-15 10:30:00'
+  },
+  {
+    id: 'alert-004',
+    datasetId: 'ds-001',
+    fieldName: 'purchase_time',
+    ruleType: 'timeliness',
+    threshold: 3600,
+    operator: '>',
+    severity: 'critical',
+    enabled: true,
+    notifyChannels: ['email', 'dingtalk', 'oncall'],
+    createdAt: '2024-05-20 16:00:00',
+    lastEvaluatedAt: '2024-06-15 10:30:00'
+  },
+  {
+    id: 'alert-005',
+    datasetId: 'ds-009',
+    fieldName: 'price',
+    ruleType: 'anomaly_detection',
+    threshold: 3.0,
+    operator: '>',
+    severity: 'info',
+    enabled: false,
+    notifyChannels: ['email'],
+    createdAt: '2024-05-22 11:00:00',
+    lastEvaluatedAt: '2024-06-10 10:30:00'
+  }
+]
+
+export const qualityAlertHistory = [
+  {
+    id: 'alert-hist-001',
+    ruleId: 'alert-001',
+    datasetId: 'ds-006',
+    fieldName: 'pay_amount',
+    ruleType: 'completeness',
+    severity: 'critical',
+    triggeredAt: '2024-06-14 08:15:00',
+    resolvedAt: '2024-06-14 09:30:00',
+    actualValue: 0.87,
+    expectedValue: '>= 0.95',
+    status: 'resolved',
+    resolverId: 'u-006',
+    resolverName: '杨洋',
+    resolutionNote: '修复了 ETL 任务空值填充逻辑，数据已补全'
+  },
+  {
+    id: 'alert-hist-002',
+    ruleId: 'alert-001',
+    datasetId: 'ds-006',
+    fieldName: 'pay_amount',
+    ruleType: 'completeness',
+    severity: 'critical',
+    triggeredAt: '2024-06-15 08:15:00',
+    resolvedAt: null,
+    actualValue: 0.82,
+    expectedValue: '>= 0.95',
+    status: 'firing',
+    resolverId: null,
+    resolverName: null,
+    resolutionNote: null
+  },
+  {
+    id: 'alert-hist-003',
+    ruleId: 'alert-004',
+    datasetId: 'ds-001',
+    fieldName: 'purchase_time',
+    ruleType: 'timeliness',
+    severity: 'critical',
+    triggeredAt: '2024-06-13 09:00:00',
+    resolvedAt: '2024-06-13 10:15:00',
+    actualValue: 4500,
+    expectedValue: '<= 3600',
+    status: 'resolved',
+    resolverId: 'u-003',
+    resolverName: '王强',
+    resolutionNote: '上游数据源延迟问题已沟通，现已恢复正常'
+  },
+  {
+    id: 'alert-hist-004',
+    ruleId: 'alert-002',
+    datasetId: 'ds-006',
+    fieldName: 'order_id',
+    ruleType: 'uniqueness',
+    severity: 'warning',
+    triggeredAt: '2024-06-12 14:30:00',
+    resolvedAt: '2024-06-12 15:00:00',
+    actualValue: 0.97,
+    expectedValue: '>= 0.99',
+    status: 'acknowledged',
+    resolverId: 'u-006',
+    resolverName: '杨洋',
+    resolutionNote: '发现重复订单，已标记为已知问题，待业务侧确认'
+  },
+  {
+    id: 'alert-hist-005',
+    ruleId: 'alert-003',
+    datasetId: 'ds-012',
+    fieldName: 'phone',
+    ruleType: 'accuracy',
+    severity: 'warning',
+    triggeredAt: '2024-06-14 16:00:00',
+    resolvedAt: null,
+    actualValue: 0.85,
+    expectedValue: '>= 0.90',
+    status: 'firing',
+    resolverId: null,
+    resolverName: null,
+    resolutionNote: null
+  }
+]
+
+export const datasetLifecycleStates = [
+  {
+    datasetId: 'ds-001',
+    currentState: 'active',
+    createdAt: '2023-01-15',
+    lastUpdatedAt: '2024-06-10',
+    lastAccessedAt: '2024-06-14',
+    accessCount30d: 15234,
+    archiveAfterDays: 365,
+    deleteAfterDays: 730,
+    retentionPolicy: 'standard',
+    ownerId: 'u-001'
+  },
+  {
+    datasetId: 'ds-006',
+    currentState: 'active',
+    createdAt: '2023-02-20',
+    lastUpdatedAt: '2024-06-15',
+    lastAccessedAt: '2024-06-15',
+    accessCount30d: 28965,
+    archiveAfterDays: 180,
+    deleteAfterDays: 365,
+    retentionPolicy: 'strict',
+    ownerId: 'u-006'
+  },
+  {
+    datasetId: 'ds-012',
+    currentState: 'active',
+    createdAt: '2023-03-10',
+    lastUpdatedAt: '2024-06-12',
+    lastAccessedAt: '2024-06-14',
+    accessCount30d: 9876,
+    archiveAfterDays: 365,
+    deleteAfterDays: 730,
+    retentionPolicy: 'standard',
+    ownerId: 'u-014'
+  },
+  {
+    datasetId: 'ds-009',
+    currentState: 'active',
+    createdAt: '2023-04-05',
+    lastUpdatedAt: '2024-06-13',
+    lastAccessedAt: '2024-06-15',
+    accessCount30d: 18234,
+    archiveAfterDays: 365,
+    deleteAfterDays: 1095,
+    retentionPolicy: 'permanent',
+    ownerId: 'u-010'
+  },
+  {
+    datasetId: 'ds-002',
+    currentState: 'archived',
+    createdAt: '2022-06-18',
+    lastUpdatedAt: '2023-12-20',
+    lastAccessedAt: '2024-01-15',
+    accessCount30d: 23,
+    archivedAt: '2024-01-20',
+    archiveAfterDays: 180,
+    deleteAfterDays: 365,
+    retentionPolicy: 'standard',
+    ownerId: 'u-011',
+    archiveReason: '长期未访问，数据已迁移至冷存储'
+  },
+  {
+    datasetId: 'ds-004',
+    currentState: 'archived',
+    createdAt: '2022-08-22',
+    lastUpdatedAt: '2023-11-15',
+    lastAccessedAt: '2023-11-20',
+    accessCount30d: 0,
+    archivedAt: '2023-12-01',
+    archiveAfterDays: 180,
+    deleteAfterDays: 365,
+    retentionPolicy: 'standard',
+    ownerId: 'u-010',
+    archiveReason: '业务下线，相关数据已归档'
+  },
+  {
+    datasetId: 'ds-008',
+    currentState: 'deprecated',
+    createdAt: '2022-03-15',
+    lastUpdatedAt: '2023-08-10',
+    lastAccessedAt: '2023-09-01',
+    accessCount30d: 0,
+    deprecatedAt: '2023-10-15',
+    successorDatasetId: 'ds-016',
+    retentionPolicy: 'standard',
+    ownerId: 'u-006',
+    deprecationNote: '已迁移至新推荐算法用户特征表 ds-016'
+  }
+]
+
+export const lifecycleStateMap = {
+  'active': { label: '活跃', color: '#10b981', icon: 'Activity' },
+  'archived': { label: '已归档', color: '#6b7280', icon: 'Archive' },
+  'deprecated': { label: '已废弃', color: '#ef4444', icon: 'Ban' },
+  'pending_archive': { label: '待归档', color: '#f59e0b', icon: 'Clock' }
+}
+
+export const retentionPolicyMap = {
+  'standard': { label: '标准策略', archiveDays: 365, deleteDays: 730, description: '1年后归档，2年后删除' },
+  'strict': { label: '严格策略', archiveDays: 180, deleteDays: 365, description: '半年后归档，1年后删除' },
+  'permanent': { label: '永久保留', archiveDays: null, deleteDays: null, description: '永久保留，不自动归档' }
+}
+
+export const federatedCatalogInstances = [
+  {
+    id: 'instance-shanghai',
+    name: '上海主数据中心',
+    location: '上海',
+    type: 'datacenter',
+    status: 'online',
+    endpoint: 'https://catalog-sh.internal/api',
+    datasetCount: 156,
+    lineageCount: 892,
+    lastSyncAt: '2024-06-15 10:00:00',
+    healthScore: 98,
+    enabled: true
+  },
+  {
+    id: 'instance-beijing',
+    name: '北京数据中心',
+    location: '北京',
+    type: 'datacenter',
+    status: 'online',
+    endpoint: 'https://catalog-bj.internal/api',
+    datasetCount: 124,
+    lineageCount: 678,
+    lastSyncAt: '2024-06-15 10:05:00',
+    healthScore: 95,
+    enabled: true
+  },
+  {
+    id: 'instance-shenzhen',
+    name: '深圳数据中心',
+    location: '深圳',
+    type: 'datacenter',
+    status: 'online',
+    endpoint: 'https://catalog-sz.internal/api',
+    datasetCount: 89,
+    lineageCount: 456,
+    lastSyncAt: '2024-06-15 09:55:00',
+    healthScore: 92,
+    enabled: true
+  },
+  {
+    id: 'instance-aws-sg',
+    name: 'AWS 新加坡',
+    location: '新加坡',
+    type: 'cloud',
+    status: 'online',
+    endpoint: 'https://catalog-aws-sg.internal/api',
+    datasetCount: 67,
+    lineageCount: 234,
+    lastSyncAt: '2024-06-15 09:50:00',
+    healthScore: 88,
+    enabled: true
+  },
+  {
+    id: 'instance-aliyun-hz',
+    name: '阿里云杭州',
+    location: '杭州',
+    type: 'cloud',
+    status: 'degraded',
+    endpoint: 'https://catalog-ali-hz.internal/api',
+    datasetCount: 45,
+    lineageCount: 123,
+    lastSyncAt: '2024-06-14 18:30:00',
+    healthScore: 65,
+    enabled: true
+  },
+  {
+    id: 'instance-dr',
+    name: '容灾备份中心',
+    location: '成都',
+    type: 'dr',
+    status: 'standby',
+    endpoint: 'https://catalog-dr.internal/api',
+    datasetCount: 156,
+    lineageCount: 892,
+    lastSyncAt: '2024-06-15 08:00:00',
+    healthScore: 100,
+    enabled: false
+  }
+]
+
+export const federatedDatasetMappings = [
+  { federatedId: 'ds-006', instanceId: 'instance-shanghai', localId: 'ds-006' },
+  { federatedId: 'ds-001', instanceId: 'instance-shanghai', localId: 'ds-001' },
+  { federatedId: 'ds-009', instanceId: 'instance-beijing', localId: 'ds-009' },
+  { federatedId: 'ds-012', instanceId: 'instance-beijing', localId: 'ds-012' },
+  { federatedId: 'ds-016', instanceId: 'instance-shenzhen', localId: 'ds-016' },
+  { federatedId: 'ds-019', instanceId: 'instance-aws-sg', localId: 'ds-019' },
+  { federatedId: 'ds-f-aws-001', instanceId: 'instance-aws-sg', localId: null },
+  { federatedId: 'ds-f-ali-001', instanceId: 'instance-aliyun-hz', localId: null }
+]
+
+export const instanceHealthStatusMap = {
+  'online': { label: '在线', color: '#10b981' },
+  'degraded': { label: '降级', color: '#f59e0b' },
+  'offline': { label: '离线', color: '#ef4444' },
+  'standby': { label: '待机', color: '#6b7280' },
+  'syncing': { label: '同步中', color: '#3b82f6' }
+}
+
+export const subscriberActivityMetrics = [
+  {
+    datasetId: 'ds-006',
+    subscriberCount: 12,
+    viewCount30d: 15234,
+    queryCount30d: 8976,
+    downloadCount30d: 456,
+    avgSessionDuration: 245,
+    activeUsers7d: 45,
+    activeUsers30d: 78,
+    churnRate: 0.05,
+    subscriptionGrowthRate: 0.12,
+    last30DaysData: [
+      { date: '6/1', views: 520, queries: 310, downloads: 18 },
+      { date: '6/2', views: 480, queries: 290, downloads: 15 },
+      { date: '6/3', views: 510, queries: 305, downloads: 20 },
+      { date: '6/4', views: 490, queries: 295, downloads: 16 },
+      { date: '6/5', views: 540, queries: 320, downloads: 22 },
+      { date: '6/6', views: 460, queries: 270, downloads: 12 },
+      { date: '6/7', views: 420, queries: 250, downloads: 10 },
+      { date: '6/8', views: 560, queries: 340, downloads: 25 },
+      { date: '6/9', views: 580, queries: 355, downloads: 28 },
+      { date: '6/10', views: 550, queries: 330, downloads: 19 },
+      { date: '6/11', views: 570, queries: 345, downloads: 24 },
+      { date: '6/12', views: 530, queries: 315, downloads: 17 },
+      { date: '6/13', views: 590, queries: 365, downloads: 30 },
+      { date: '6/14', views: 610, queries: 380, downloads: 32 },
+      { date: '6/15', views: 450, queries: 275, downloads: 15 }
+    ]
+  },
+  {
+    datasetId: 'ds-001',
+    subscriberCount: 8,
+    viewCount30d: 9876,
+    queryCount30d: 5432,
+    downloadCount30d: 234,
+    avgSessionDuration: 180,
+    activeUsers7d: 28,
+    activeUsers30d: 45,
+    churnRate: 0.08,
+    subscriptionGrowthRate: 0.05,
+    last30DaysData: [
+      { date: '6/1', views: 320, queries: 180, downloads: 8 },
+      { date: '6/2', views: 340, queries: 190, downloads: 10 },
+      { date: '6/3', views: 310, queries: 170, downloads: 7 },
+      { date: '6/4', views: 330, queries: 185, downloads: 9 },
+      { date: '6/5', views: 350, queries: 200, downloads: 11 },
+      { date: '6/6', views: 280, queries: 150, downloads: 6 },
+      { date: '6/7', views: 250, queries: 130, downloads: 5 },
+      { date: '6/8', views: 360, queries: 210, downloads: 12 },
+      { date: '6/9', views: 380, queries: 225, downloads: 14 },
+      { date: '6/10', views: 340, queries: 195, downloads: 9 },
+      { date: '6/11', views: 370, queries: 215, downloads: 11 },
+      { date: '6/12', views: 330, queries: 180, downloads: 8 },
+      { date: '6/13', views: 390, queries: 230, downloads: 13 },
+      { date: '6/14', views: 410, queries: 245, downloads: 15 },
+      { date: '6/15', views: 320, queries: 180, downloads: 7 }
+    ]
+  },
+  {
+    datasetId: 'ds-009',
+    subscriberCount: 5,
+    viewCount30d: 6543,
+    queryCount30d: 3210,
+    downloadCount30d: 123,
+    avgSessionDuration: 120,
+    activeUsers7d: 15,
+    activeUsers30d: 28,
+    churnRate: 0.03,
+    subscriptionGrowthRate: 0.08,
+    last30DaysData: []
+  },
+  {
+    datasetId: 'ds-012',
+    subscriberCount: 3,
+    viewCount30d: 2345,
+    queryCount30d: 1234,
+    downloadCount30d: 67,
+    avgSessionDuration: 90,
+    activeUsers7d: 8,
+    activeUsers30d: 18,
+    churnRate: 0.02,
+    subscriptionGrowthRate: -0.05,
+    last30DaysData: []
+  }
+]
+
+export const alertSeverityMap = {
+  'critical': { label: '严重', color: '#ef4444', icon: 'AlertTriangle' },
+  'warning': { label: '警告', color: '#f59e0b', icon: 'AlertCircle' },
+  'info': { label: '提示', color: '#3b82f6', icon: 'Info' }
+}
+
+export const alertStatusMap = {
+  'firing': { label: '触发中', color: '#ef4444' },
+  'acknowledged': { label: '已确认', color: '#f59e0b' },
+  'resolved': { label: '已解决', color: '#10b981' },
+  'muted': { label: '已静默', color: '#6b7280' }
+}
+
+export const alertRuleTypeMap = {
+  'completeness': { label: '完整性', description: '监控字段空值率' },
+  'uniqueness': { label: '唯一性', description: '监控字段重复率' },
+  'accuracy': { label: '准确性', description: '监控格式/校验规则匹配率' },
+  'timeliness': { label: '时效性', description: '监控数据延迟（秒）' },
+  'anomaly_detection': { label: '异常检测', description: '监控数值异常波动' },
+  'volume': { label: '数据量', description: '监控数据量异常变化' },
+  'schema': { label: 'Schema 变更', description: '监控表结构变更' }
+}
+
 

@@ -97,6 +97,19 @@
       </div>
 
       <div class="header-right">
+        <button class="header-icon-btn" @click="toggleAlertPanel" title="质量告警中心">
+          <AlertTriangle :size="18" />
+          <span v-if="firingAlertCount > 0" class="notification-dot">{{ firingAlertCount }}</span>
+        </button>
+        <button class="header-icon-btn" @click="toggleFederationPanel" title="联邦目录">
+          <Globe :size="18" />
+        </button>
+        <button class="header-icon-btn" @click="toggleActivityPanel" title="活跃度看板">
+          <BarChart3 :size="18" />
+        </button>
+        <button class="header-icon-btn" @click="toggleLifecyclePanel" title="生命周期管理">
+          <Archive :size="18" />
+        </button>
         <button class="header-icon-btn" @click="toggleImportPanel" title="批量导入">
           <Upload :size="18" />
         </button>
@@ -269,6 +282,9 @@
             <div class="dt-left">
               <h1 class="dataset-title">
                 {{ selectedDataset.name }}
+                <span v-if="currentLifecycleDisplay" class="lifecycle-badge" :style="{ background: currentLifecycleDisplay.color + '22', color: currentLifecycleDisplay.color }">
+                  {{ currentLifecycleDisplay.label }}
+                </span>
                 <span class="sensitivity-badge" :style="{ background: currentSensitivityColor + '22', color: currentSensitivityColor }">
                   {{ currentSensitivityLabel }}
                 </span>
@@ -283,6 +299,9 @@
               <button v-if="currentDatasetScore" class="btn ghost score-btn" @click="openQualityTab">
                 <Star :size="14" :style="{ color: qualityScoreService.getScoreColor(currentDatasetScore.overall) }" />
                 {{ currentDatasetScore.overall }} 分
+              </button>
+              <button class="btn ghost" @click="toggleActivityPanel">
+                <BarChart3 :size="14" /> 活跃度
               </button>
               <button v-if="!isSubscribedToCurrentDataset" class="btn ghost" @click="handleSubscribeDataset">
                 <BellRing :size="14" /> 订阅变更
@@ -327,6 +346,13 @@
                 :datasetId="selectedDatasetId"
                 :showTrend="true"
                 :showFieldMetrics="true"
+              />
+            </div>
+
+            <div v-if="currentTab === 'activity'" class="tab-pane full-height">
+              <ActivityDashboard
+                v-if="selectedDatasetId"
+                :datasetId="selectedDatasetId"
               />
             </div>
 
@@ -432,8 +458,76 @@
       </Teleport>
 
       <Teleport to="body">
+        <Transition name="slide">
+          <div v-if="showLifecyclePanel" class="global-panel import-panel-wrapper">
+            <div class="panel-header-bar">
+              <span class="panel-header-title">生命周期管理</span>
+              <button class="panel-close-btn" @click="showLifecyclePanel = false">
+                <X :size="18" />
+              </button>
+            </div>
+            <LifecyclePanel
+              @selectDataset="handleLifecycleSelectDataset"
+              @close="showLifecyclePanel = false"
+            />
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="slide">
+          <div v-if="showActivityPanel" class="global-panel import-panel-wrapper">
+            <div class="panel-header-bar">
+              <span class="panel-header-title">活跃度看板</span>
+              <button class="panel-close-btn" @click="showActivityPanel = false">
+                <X :size="18" />
+              </button>
+            </div>
+            <ActivityDashboard
+              v-if="selectedDatasetId"
+              :datasetId="selectedDatasetId"
+            />
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="slide">
+          <div v-if="showAlertPanel" class="global-panel notification-panel-wrapper">
+            <div class="panel-header-bar">
+              <span class="panel-header-title">质量告警中心</span>
+              <button class="panel-close-btn" @click="showAlertPanel = false">
+                <X :size="18" />
+              </button>
+            </div>
+            <AlertPanel
+              :datasetId="selectedDatasetId"
+              @close="showAlertPanel = false"
+            />
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
+        <Transition name="slide">
+          <div v-if="showFederationPanel" class="global-panel import-panel-wrapper">
+            <div class="panel-header-bar">
+              <span class="panel-header-title">联邦目录</span>
+              <button class="panel-close-btn" @click="showFederationPanel = false">
+                <X :size="18" />
+              </button>
+            </div>
+            <FederationPanel
+              @selectDataset="handleFederationSelectDataset"
+              @close="showFederationPanel = false"
+            />
+          </div>
+        </Transition>
+      </Teleport>
+
+      <Teleport to="body">
         <Transition name="fade">
-          <div v-if="showNotificationPanel || showImportPanel" class="overlay-backdrop" @click="showNotificationPanel = false; showImportPanel = false"></div>
+          <div v-if="showNotificationPanel || showImportPanel || showAlertPanel || showFederationPanel || showActivityPanel || showLifecyclePanel" class="overlay-backdrop" @click="closeAllPanelsExcept()"></div>
         </Transition>
       </Teleport>
     </div>
@@ -474,7 +568,12 @@ import {
   ArrowUpDown,
   Plus,
   BellRing,
-  BellOff
+  BellOff,
+  AlertTriangle,
+  Globe,
+  BarChart3,
+  Archive,
+  Activity
 } from 'lucide-vue-next'
 
 import {
@@ -494,12 +593,20 @@ import ApprovalPanel from './components/ApprovalPanel.vue'
 import NotificationPanel from './components/NotificationPanel.vue'
 import QualityScoreCard from './components/QualityScoreCard.vue'
 import ImportPanel from './components/ImportPanel.vue'
+import AlertPanel from './components/AlertPanel.vue'
+import FederationPanel from './components/FederationPanel.vue'
+import ActivityDashboard from './components/ActivityDashboard.vue'
+import LifecyclePanel from './components/LifecyclePanel.vue'
 
 import { searchEngine, highlightText } from './utils/searchEngine'
 import { permissionService } from './utils/permissionService'
 import { subscriptionService } from './utils/subscriptionService'
 import { qualityScoreService } from './utils/qualityScoreService'
 import { importService } from './utils/importService'
+import { alertService } from './utils/alertService'
+import { federationService } from './utils/federationService'
+import { activityService } from './utils/activityService'
+import { lifecycleService } from './utils/lifecycleService'
 import {
   exportDatasetToOpenLineage,
   exportLineageToOpenLineage,
@@ -524,16 +631,22 @@ const sortBy = ref('overall')
 const sortOrder = ref('desc')
 const showNotificationPanel = ref(false)
 const showImportPanel = ref(false)
+const showAlertPanel = ref(false)
+const showFederationPanel = ref(false)
+const showActivityPanel = ref(false)
+const showLifecyclePanel = ref(false)
 
 watch(currentUserId, (uid) => {
   permissionService.switchUser(uid)
   subscriptionService.switchUser(uid)
   importService.switchUser(uid)
+  alertService.currentUserId = uid
 })
 
 const tabs = computed(() => [
   { key: 'info', label: '基础信息', icon: markRaw(TableIcon) },
   { key: 'quality', label: '质量评分', icon: markRaw(Star), badge: getDatasetOverallScore(selectedDatasetId.value) || null },
+  { key: 'activity', label: '活跃度', icon: markRaw(Activity) },
   { key: 'lineage', label: '血缘关系图', icon: markRaw(GitBranch) },
   { key: 'approvals', label: '审批管理', icon: markRaw(FileCheck), badge: pendingApprovalCount.value || null },
   { key: 'export', label: 'OpenLineage 导出', icon: markRaw(Rocket) }
@@ -888,6 +1001,18 @@ const unreadNotificationCount = computed(() =>
   subscriptionService.getUnreadCount()
 )
 
+const firingAlertCount = computed(() =>
+  alertService.getFiringAlerts().length
+)
+
+const currentLifecycleState = computed(() =>
+  selectedDatasetId.value ? lifecycleService.getLifecycleState(selectedDatasetId.value) : null
+)
+
+const currentLifecycleDisplay = computed(() =>
+  selectedDatasetId.value ? lifecycleService.getLifecycleStateDisplay(selectedDatasetId.value) : null
+)
+
 const isSubscribedToCurrentDataset = computed(() =>
   selectedDatasetId.value ? subscriptionService.isSubscribed(selectedDatasetId.value) : false
 )
@@ -943,6 +1068,47 @@ function handleNotificationSelectDataset(datasetId) {
 
 function openQualityTab() {
   currentTab.value = 'quality'
+}
+
+function toggleAlertPanel() {
+  showAlertPanel.value = !showAlertPanel.value
+  closeAllPanelsExcept('alert')
+}
+
+function toggleFederationPanel() {
+  showFederationPanel.value = !showFederationPanel.value
+  closeAllPanelsExcept('federation')
+}
+
+function toggleActivityPanel() {
+  showActivityPanel.value = !showActivityPanel.value
+  closeAllPanelsExcept('activity')
+}
+
+function toggleLifecyclePanel() {
+  showLifecyclePanel.value = !showLifecyclePanel.value
+  closeAllPanelsExcept('lifecycle')
+}
+
+function closeAllPanelsExcept(except = null) {
+  if (except !== 'notification') showNotificationPanel.value = false
+  if (except !== 'import') showImportPanel.value = false
+  if (except !== 'alert') showAlertPanel.value = false
+  if (except !== 'federation') showFederationPanel.value = false
+  if (except !== 'activity') showActivityPanel.value = false
+  if (except !== 'lifecycle') showLifecyclePanel.value = false
+}
+
+function handleFederationSelectDataset(datasetId) {
+  selectedDatasetId.value = datasetId
+  showFederationPanel.value = false
+  currentTab.value = 'info'
+}
+
+function handleLifecycleSelectDataset(datasetId) {
+  selectedDatasetId.value = datasetId
+  showLifecyclePanel.value = false
+  currentTab.value = 'info'
 }
 </script>
 
@@ -1545,7 +1711,8 @@ function openQualityTab() {
 }
 
 .sensitivity-badge,
-.team-badge {
+.team-badge,
+.lifecycle-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;

@@ -937,3 +937,439 @@ describe('新功能组件集成测试', () => {
     expect(wrapper.vm.sortOrder).toBe('asc')
   })
 })
+
+describe('质量告警链路 E2E', () => {
+  beforeEach(async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    alertService.reset()
+  })
+
+  it('可以获取告警规则列表', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const rules = alertService.getRulesForDataset('ds-006')
+    expect(rules.length).toBeGreaterThan(0)
+    expect(rules[0].datasetId).toBe('ds-006')
+  })
+
+  it('可以创建新告警规则', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const rule = alertService.createAlertRule({
+      datasetId: 'ds-001',
+      fieldName: 'test_field',
+      ruleType: 'completeness',
+      threshold: 0.95,
+      operator: '<',
+      severity: 'warning',
+      notifyChannels: ['email']
+    })
+    expect(rule).toBeTruthy()
+    expect(rule.id).toBeTruthy()
+    expect(alertService.getRulesForDataset('ds-001').length).toBeGreaterThan(0)
+  })
+
+  it('可以切换告警规则启用状态', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const rule = alertService.alertRules.find(r => r.enabled === true)
+    if (rule) {
+      const result = alertService.toggleAlertRule(rule.id)
+      expect(result.enabled).toBe(false)
+      const result2 = alertService.toggleAlertRule(rule.id)
+      expect(result2.enabled).toBe(true)
+    }
+  })
+
+  it('告警评估可以正确识别异常', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const rule = alertService.alertRules.find(r => r.enabled)
+    if (rule) {
+      const badValue = rule.operator === '<' ? rule.threshold * 0.5 : rule.threshold * 1.5
+      const result = alertService.evaluateRule(rule.id, badValue)
+      expect(result.passed).toBe(false)
+    }
+  })
+
+  it('告警触发后可以确认和解决', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const firing = alertService.getFiringAlerts('ds-006')
+    expect(firing.length).toBeGreaterThan(0)
+
+    const alert = firing[0]
+    const ackResult = alertService.acknowledgeAlert(alert.id, 'u-001', '测试用户')
+    expect(ackResult.status).toBe('acknowledged')
+    expect(ackResult.resolverId).toBe('u-001')
+
+    const resolveResult = alertService.resolveAlert(alert.id, 'u-001', '测试用户', '问题已修复')
+    expect(resolveResult.status).toBe('resolved')
+    expect(resolveResult.resolutionNote).toBe('问题已修复')
+  })
+
+  it('告警触发后会发送通知给订阅用户', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const { subscriptionService } = await import('../src/utils/subscriptionService.js')
+
+    subscriptionService.resetSubscriptions()
+    alertService.reset()
+    alertService.alertHistory.splice(0, alertService.alertHistory.length)
+
+    subscriptionService.switchUser('u-001')
+    subscriptionService.subscribe('ds-006', { notifyTypes: ['quality_alert'] })
+    subscriptionService.markAllAsRead('u-001')
+
+    const beforeCount = subscriptionService.getUnreadCount('u-001')
+    const sub = subscriptionService.getSubscription('ds-006', 'u-001')
+    expect(sub).toBeTruthy()
+    expect(sub.notifyTypes).toContain('quality_alert')
+
+    const rule = alertService.alertRules.find(r => r.datasetId === 'ds-006' && r.enabled)
+    expect(rule).toBeTruthy()
+
+    const beforeFiringCount = alertService.getFiringAlerts('ds-006').length
+    const beforeNotifications = subscriptionService.getMyNotifications('u-001')
+
+    const evalResult = alertService.simulateAlert(rule.id)
+    expect(evalResult.passed).toBe(false)
+
+    await nextTick()
+
+    const afterFiringCount = alertService.getFiringAlerts('ds-006').length
+    expect(afterFiringCount).toBeGreaterThan(beforeFiringCount)
+
+    const afterNotifications = subscriptionService.getMyNotifications('u-001')
+    expect(afterNotifications.length).toBeGreaterThan(beforeNotifications.length)
+
+    const qualityAlertNotifs = afterNotifications.filter(n => n.type === 'quality_alert')
+    expect(qualityAlertNotifs.length).toBeGreaterThan(0)
+
+    const afterCount = subscriptionService.getUnreadCount('u-001')
+    expect(afterCount).toBeGreaterThan(beforeCount)
+  })
+
+  it('告警统计功能正确', async () => {
+    const { alertService } = await import('../src/utils/alertService.js')
+    const stats = alertService.getAlertStats()
+    expect(stats.total).toBeGreaterThan(0)
+    expect(stats.firing).toBeGreaterThanOrEqual(0)
+    expect(stats.resolved).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('跨实例联邦目录 E2E', () => {
+  beforeEach(async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    federationService.reset()
+  })
+
+  it('可以获取所有联邦实例列表', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const instances = federationService.getAllInstances()
+    expect(instances.length).toBeGreaterThan(0)
+    expect(instances[0].id).toBeTruthy()
+    expect(instances[0].name).toBeTruthy()
+  })
+
+  it('可以过滤只显示已启用实例', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const allInstances = federationService.getAllInstances()
+    const enabledInstances = federationService.getAllInstances(true)
+    expect(enabledInstances.length).toBeLessThanOrEqual(allInstances.length)
+    enabledInstances.forEach(inst => {
+      expect(inst.enabled).toBe(true)
+    })
+  })
+
+  it('可以添加新的联邦实例', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const newInstance = federationService.addInstance({
+      name: '测试实例',
+      endpoint: 'https://test.internal/api',
+      location: '测试',
+      type: 'datacenter'
+    })
+    expect(newInstance).toBeTruthy()
+    expect(newInstance.id).toBeTruthy()
+    expect(federationService.getInstance(newInstance.id)).toBeTruthy()
+  })
+
+  it('可以切换实例启用状态', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const instance = federationService.instances.find(i => i.enabled === true)
+    if (instance) {
+      const result = federationService.toggleInstance(instance.id)
+      expect(result.enabled).toBe(false)
+    }
+  })
+
+  it('实例同步功能正常工作', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    federationService.reset()
+    const onlineInstance = federationService.instances.find(i => i.status === 'online' && i.enabled)
+    expect(onlineInstance).toBeTruthy()
+
+    let result = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      result = await federationService.syncInstance(onlineInstance.id)
+      if (result.success) break
+    }
+    expect(result).toBeTruthy()
+    expect(result.success).toBe(true)
+    expect(federationService.cachedDatasets.has(onlineInstance.id)).toBe(true)
+  })
+
+  it('可以获取联邦数据集', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    federationService.reset()
+    const onlineInstance = federationService.instances.find(i => i.status === 'online' && i.enabled)
+    expect(onlineInstance).toBeTruthy()
+    await federationService.syncInstance(onlineInstance.id)
+    const datasets = federationService.getFederatedDatasets(onlineInstance.id)
+    expect(datasets.length).toBeGreaterThan(0)
+  })
+
+  it('可以映射联邦数据集到本地', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    federationService.reset()
+    const onlineInstance = federationService.instances.find(i => i.status === 'online' && i.enabled)
+    expect(onlineInstance).toBeTruthy()
+
+    let result = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      result = await federationService.syncInstance(onlineInstance.id)
+      if (result.success) break
+    }
+    expect(result.success).toBe(true)
+
+    const datasets = federationService.getFederatedDatasets(onlineInstance.id)
+    expect(datasets.length).toBeGreaterThan(0)
+
+    const mapping = federationService.mapToLocalDataset(datasets[0].id, onlineInstance.id, 'ds-001')
+    expect(mapping).toBeTruthy()
+    expect(mapping.localId).toBe('ds-001')
+    const foundMapping = federationService.getLocalMapping(datasets[0].id, onlineInstance.id)
+    expect(foundMapping.localId).toBe('ds-001')
+  })
+
+  it('可以导入联邦数据集到本地', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const { datasets } = await import('../src/data/mockData.js')
+    const onlineInstance = federationService.instances.find(i => i.status === 'online' && i.enabled)
+    if (onlineInstance) {
+      await federationService.syncInstance(onlineInstance.id)
+      const datasets = federationService.getFederatedDatasets(onlineInstance.id)
+      if (datasets.length > 0) {
+        const beforeCount = Object.keys(datasets).length
+        const result = federationService.importFederatedDataset(datasets[0].id, onlineInstance.id, 'u-001')
+        expect(result).toBeTruthy()
+        expect(result.id).toBeTruthy()
+        expect(result.source).toBe('federated')
+      }
+    }
+  })
+
+  it('联邦目录统计功能正确', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const stats = federationService.getFederationStats()
+    expect(stats.instanceCount).toBeGreaterThan(0)
+    expect(stats.onlineCount).toBeGreaterThanOrEqual(0)
+  })
+
+  it('可以搜索联邦数据集', async () => {
+    const { federationService } = await import('../src/utils/federationService.js')
+    const onlineInstance = federationService.instances.find(i => i.status === 'online' && i.enabled)
+    if (onlineInstance) {
+      await federationService.syncInstance(onlineInstance.id)
+      const results = federationService.searchFederated('联邦')
+      expect(Array.isArray(results)).toBe(true)
+    }
+  })
+})
+
+describe('数据集生命周期归档 E2E', () => {
+  beforeEach(async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    lifecycleService.reset()
+  })
+
+  it('可以获取数据集生命周期状态', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const state = lifecycleService.getLifecycleState('ds-001')
+    expect(state).toBeTruthy()
+    expect(state.currentState).toBe('active')
+  })
+
+  it('可以获取状态显示信息', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const display = lifecycleService.getLifecycleStateDisplay('ds-001')
+    expect(display).toBeTruthy()
+    expect(display.label).toBe('活跃')
+  })
+
+  it('可以归档数据集', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const result = lifecycleService.archiveDataset('ds-012', {
+      operatorId: 'u-001',
+      operatorName: '测试用户',
+      reason: '测试归档'
+    })
+    expect(result.currentState).toBe('archived')
+    expect(result.archivedAt).toBeTruthy()
+    expect(result.archiveReason).toBe('测试归档')
+  })
+
+  it('可以恢复已归档数据集', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    lifecycleService.archiveDataset('ds-001', { operatorId: 'u-001', reason: '测试归档' })
+    const result = lifecycleService.restoreDataset('ds-001', {
+      operatorId: 'u-001',
+      operatorName: '测试用户',
+      reason: '测试恢复'
+    })
+    expect(result.currentState).toBe('active')
+    expect(result.archivedAt).toBeNull()
+  })
+
+  it('可以废弃数据集并指定替代数据集', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const result = lifecycleService.deprecateDataset('ds-001', 'ds-006', '已迁移到新表', {
+      operatorId: 'u-001',
+      operatorName: '测试用户'
+    })
+    expect(result.currentState).toBe('deprecated')
+    expect(result.successorDatasetId).toBe('ds-006')
+  })
+
+  it('可以更新保留策略', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const result = lifecycleService.updateRetentionPolicy('ds-001', 'strict')
+    expect(result.retentionPolicy).toBe('strict')
+    expect(result.archiveAfterDays).toBe(180)
+  })
+
+  it('可以扫描待归档数据集', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const candidates = lifecycleService.findCandidatesForArchive()
+    expect(Array.isArray(candidates)).toBe(true)
+  })
+
+  it('可以管理归档队列', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    lifecycleService.addToArchiveQueue('ds-012', '测试加入队列')
+    expect(lifecycleService.archiveQueue.length).toBe(1)
+    lifecycleService.removeFromArchiveQueue('ds-012')
+    expect(lifecycleService.archiveQueue.length).toBe(0)
+  })
+
+  it('可以批量归档数据集', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    lifecycleService.addToArchiveQueue('ds-012')
+    lifecycleService.addToArchiveQueue('ds-013')
+    const results = lifecycleService.bulkArchive(['ds-012', 'ds-013'], {
+      operatorId: 'u-001',
+      operatorName: '测试用户',
+      reason: '批量归档测试'
+    })
+    expect(Array.isArray(results)).toBe(true)
+  })
+
+  it('生命周期状态统计正确', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const stats = lifecycleService.getLifecycleStats()
+    expect(stats.total).toBeGreaterThan(0)
+    expect(stats.active).toBeGreaterThan(0)
+  })
+
+  it('状态转换时记录事件', async () => {
+    const { lifecycleService } = await import('../src/utils/lifecycleService.js')
+    const beforeCount = lifecycleService.lifecycleEvents.length
+    lifecycleService.archiveDataset('ds-001', { operatorId: 'u-001', reason: '测试' })
+    const afterCount = lifecycleService.lifecycleEvents.length
+    expect(afterCount).toBeGreaterThan(beforeCount)
+  })
+})
+
+describe('订阅者活跃度看板 E2E', () => {
+  beforeEach(async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    activityService.reset()
+  })
+  it('可以获取数据集活跃度数据', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const data = activityService.getActivityForDataset('ds-006')
+    expect(data).toBeTruthy()
+    expect(data.subscriberCount).toBeGreaterThan(0)
+    expect(data.viewCount30d).toBeGreaterThan(0)
+  })
+
+  it('可以按活跃度排序获取 Top 数据集', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const topDatasets = activityService.getTopDatasetsByActivity('viewCount30d', 5)
+    expect(topDatasets.length).toBeLessThanOrEqual(5)
+    for (let i = 1; i < topDatasets.length; i++) {
+      expect(topDatasets[i - 1].viewCount30d).toBeGreaterThanOrEqual(topDatasets[i].viewCount30d)
+    }
+  })
+
+  it('可以记录用户活动', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const beforeViews = activityService.getActivityForDataset('ds-006')?.viewCount30d || 0
+    activityService.recordActivity('ds-006', 'u-001', 'view')
+    const afterViews = activityService.getActivityForDataset('ds-006').viewCount30d
+    expect(afterViews).toBe(beforeViews + 1)
+  })
+
+  it('可以获取活跃度趋势数据', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const trend = activityService.getActivityTrend('ds-006', 15)
+    expect(trend.dates.length).toBeLessThanOrEqual(15)
+    expect(trend.views.length).toBe(trend.dates.length)
+    expect(trend.queries.length).toBe(trend.dates.length)
+  })
+
+  it('可以计算参与度评分', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const score = activityService.getEngagementScore('ds-006')
+    expect(score).toBeGreaterThanOrEqual(0)
+    expect(score).toBeLessThanOrEqual(100)
+  })
+
+  it('可以获取活动类型分布', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const distribution = activityService.getActivityDistribution('ds-006')
+    expect(Array.isArray(distribution)).toBe(true)
+    const totalPercentage = distribution.reduce((acc, d) => acc + d.percentage, 0)
+    expect(totalPercentage).toBe(100)
+  })
+
+  it('可以获取全局活跃度统计', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const stats = activityService.getOverallActivityStats()
+    expect(stats.totalViews).toBeGreaterThan(0)
+    expect(stats.totalQueries).toBeGreaterThan(0)
+    expect(stats.avgEngagement).toBeGreaterThanOrEqual(0)
+  })
+
+  it('可以获取 Top 贡献者', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const contributors = activityService.getTopContributors('ds-006', 5)
+    expect(contributors.length).toBeLessThanOrEqual(5)
+    for (let i = 1; i < contributors.length; i++) {
+      expect(contributors[i - 1].contributions).toBeGreaterThanOrEqual(contributors[i].contributions)
+    }
+  })
+
+  it('可以获取留存曲线数据', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const retention = activityService.getSubscriberRetention('ds-006')
+    expect(retention.labels.length).toBeGreaterThan(0)
+    expect(retention.values.length).toBe(retention.labels.length)
+  })
+
+  it('可以更新订阅者数量', async () => {
+    const { activityService } = await import('../src/utils/activityService.js')
+    const before = activityService.getActivityForDataset('ds-006')?.subscriberCount || 0
+    activityService.updateSubscriberCount('ds-006', 1)
+    const after = activityService.getActivityForDataset('ds-006').subscriberCount
+    expect(after).toBe(before + 1)
+    activityService.updateSubscriberCount('ds-006', -1)
+    expect(activityService.getActivityForDataset('ds-006').subscriberCount).toBe(before)
+  })
+})

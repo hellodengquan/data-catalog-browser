@@ -45,11 +45,9 @@ class SubscriptionService {
   subscribe(datasetId, options = {}, userId = this.currentUserId.value) {
     const existing = this.getSubscription(datasetId, userId)
     if (existing) {
-      Object.assign(existing, {
-        notifyOnSchemaChange: options.notifyOnSchemaChange ?? true,
-        notifyOnDataUpdate: options.notifyOnDataUpdate ?? true,
-        notifyOnOwnerChange: options.notifyOnOwnerChange ?? true
-      })
+      if (options.notifyTypes) {
+        existing.notifyTypes = options.notifyTypes
+      }
       return { success: true, subscription: existing, isNew: false }
     }
 
@@ -63,9 +61,7 @@ class SubscriptionService {
       id: `sub-${String(this._subscriptions.value.length + 1).padStart(3, '0')}`,
       userId,
       datasetId,
-      notifyOnSchemaChange: options.notifyOnSchemaChange ?? true,
-      notifyOnDataUpdate: options.notifyOnDataUpdate ?? true,
-      notifyOnOwnerChange: options.notifyOnOwnerChange ?? true,
+      notifyTypes: options.notifyTypes || ['schema_change', 'data_update', 'owner_change', 'quality_alert'],
       createdAt: this._formatDate(new Date())
     }
 
@@ -102,9 +98,7 @@ class SubscriptionService {
       const sub = this.getSubscription(n.datasetId, userId)
       if (!sub) return false
 
-      if (n.type === 'schema_change' && !sub.notifyOnSchemaChange) return false
-      if (n.type === 'data_update' && !sub.notifyOnDataUpdate) return false
-      if (n.type === 'owner_change' && !sub.notifyOnOwnerChange) return false
+      if (sub.notifyTypes && !sub.notifyTypes.includes(n.type)) return false
 
       if (options.unreadOnly && n.readBy.includes(userId)) return false
       return true
@@ -200,6 +194,18 @@ class SubscriptionService {
         ...s,
         user: users[s.userId]
       }))
+  }
+
+  getSubscribersForDataset(datasetId) {
+    return this._subscriptions.value
+      .filter(s => s.datasetId === datasetId)
+  }
+
+  sendNotification(userId, notificationData) {
+    return this.createNotification({
+      ...notificationData,
+      userId: userId
+    })
   }
 
   getNotificationTypeInfo(type) {

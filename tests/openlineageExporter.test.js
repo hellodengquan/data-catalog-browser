@@ -168,7 +168,7 @@ describe('OpenLineageExporter - 标准格式导出', () => {
         const hasInputs = r.inputs?.length > 0 || r.job?.inputs?.length > 0
         const hasOutputs = r.outputs?.length > 0 || r.job?.outputs?.length > 0
         const isLineage = r.eventType === 'LINEAGE'
-        const isDataset = r.eventType === 'DATASET'
+        const isDataset = r.eventType === 'COMPLETE'
         if (isLineage) {
           expect(r.inputs?.length || 0).toBeGreaterThan(0)
           expect(r.outputs?.length || 0).toBeGreaterThan(0)

@@ -24,6 +24,25 @@ function getCurrentISO() {
 
 function parseStorageLocation(location) {
   if (!location) return { name: 'unknown', namespace: 'default://default' }
+
+  const storageSchemeMap = {
+    hive: 'hdfs',
+    kafka: 'kafka',
+    mysql: 'mysql',
+    mariadb: 'mysql',
+    postgres: 'postgres',
+    clickhouse: 'clickhouse',
+    redis: 'redis',
+    elasticsearch: 'es',
+    es: 'es',
+    mongodb: 'mongodb',
+    mongo: 'mongodb',
+    s3: 's3',
+    minio: 's3',
+    oss: 's3',
+    hdfs: 'hdfs'
+  }
+
   const match = location.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):\/\//)
   if (match) {
     const protocol = match[1].toLowerCase()
@@ -37,13 +56,25 @@ function parseStorageLocation(location) {
     }
     return { namespace: `${protocol}://default`, name: rest || 'default' }
   }
-  const parts = location.split(/\s*\/\s*/)
-  if (parts.length >= 2) {
+
+  const slashMatch = location.match(/^\s*([a-zA-Z0-9_-]+)\s*\/\s*(.+)$/)
+  if (slashMatch) {
+    const storageType = slashMatch[1].trim().toLowerCase()
+    const path = slashMatch[2].trim()
+    const scheme = storageSchemeMap[storageType] || storageType
+    const firstSlash = path.indexOf('/')
+    if (firstSlash > 0) {
+      return {
+        namespace: `${scheme}://${path.slice(0, firstSlash)}`,
+        name: path.slice(firstSlash + 1)
+      }
+    }
     return {
-      namespace: `default://${parts[0].trim().toLowerCase()}`,
-      name: parts.slice(1).join('/').trim()
+      namespace: `${scheme}://default`,
+      name: path
     }
   }
+
   return { namespace: 'default://default', name: location.trim() }
 }
 
@@ -174,7 +205,7 @@ export function exportDatasetToOpenLineage(datasetId, options = {}) {
   }
 
   return {
-    eventType: 'DATASET',
+    eventType: 'COMPLETE',
     eventTime: getCurrentISO(),
     run: {
       runId: generateUUID(),

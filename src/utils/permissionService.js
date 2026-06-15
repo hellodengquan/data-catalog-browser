@@ -113,9 +113,13 @@ class PermissionService {
   getDatasetSensitivity(datasetId) {
     const mapping = datasetTeamMapping[datasetId]
     if (!mapping) return null
+    const levelInfo = sensitivityLevels[mapping.sensitivityLevel]
     return {
       level: mapping.sensitivityLevel,
-      ...sensitivityLevels[mapping.sensitivityLevel],
+      label: levelInfo?.label,
+      color: levelInfo?.color,
+      numericLevel: levelInfo?.level,
+      description: levelInfo?.description,
       requiresApproval: mapping.requiresApproval
     }
   }

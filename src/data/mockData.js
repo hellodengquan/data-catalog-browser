@@ -631,10 +631,10 @@ export const datasetTeamMapping = {
 }
 
 export const sensitivityLevels = {
-  'public': { label: '公开', color: '#10b981', description: '任何人都可以访问' },
-  'internal': { label: '内部', color: '#3b82f6', description: '内部员工可访问' },
-  'confidential': { label: '机密', color: '#f59e0b', description: '需要申请审批才能访问' },
-  'restricted': { label: '受限', color: '#ef4444', description: '仅限授权团队，需要严格审批' }
+  'public': { level: 0, label: '公开', color: '#10b981', description: '任何人都可以访问' },
+  'internal': { level: 1, label: '内部', color: '#3b82f6', description: '内部员工可访问' },
+  'confidential': { level: 2, label: '机密', color: '#f59e0b', description: '需要申请审批才能访问' },
+  'restricted': { level: 3, label: '受限', color: '#ef4444', description: '仅限授权团队，需要严格审批' }
 }
 
 export const fieldLineage = {

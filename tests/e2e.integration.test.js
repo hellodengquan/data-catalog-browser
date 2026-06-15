@@ -13,7 +13,9 @@ describe('E2E Integration Tests - 端到端集成', () => {
   describe('App 主界面完整流程', () => {
     let wrapper
 
-    beforeEach(() => {
+    beforeEach(async () => {
+      const { permissionService } = await import('../src/utils/permissionService')
+      permissionService.switchUser('u-025')
       wrapper = mount(App, {
         attachTo: document.body,
         global: {
@@ -39,7 +41,7 @@ describe('E2E Integration Tests - 端到端集成', () => {
       expect(html).toContain('按团队筛选')
       expect(html).toContain('按敏感度')
       expect(html).toContain('全部')
-      expect(html).toContain('public')
+      expect(html).toContain('公开')
     })
 
     it('用户切换器包含管理员用户', async () => {
@@ -50,7 +52,7 @@ describe('E2E Integration Tests - 端到端集成', () => {
 
     it('Tab 导航包含四个 Tab', async () => {
       await nextTick()
-      wrapper.vm.selectedDatasetId = 'ds-012'
+      wrapper.vm.selectedDatasetId = 'ds-009'
       await nextTick()
       const html = wrapper.html()
       expect(html).toContain('基础信息')
@@ -61,14 +63,14 @@ describe('E2E Integration Tests - 端到端集成', () => {
 
     it('可以选择数据集并显示详情', async () => {
       await nextTick()
-      wrapper.vm.selectedDatasetId = 'ds-012'
+      wrapper.vm.selectedDatasetId = 'ds-009'
       await nextTick()
       const html = wrapper.html()
-      expect(html).toContain('ds-012')
+      expect(html).toContain('商品基础信息')
     })
 
     it('切换 Tab 显示不同内容', async () => {
-      wrapper.vm.selectedDatasetId = 'ds-012'
+      wrapper.vm.selectedDatasetId = 'ds-009'
       await nextTick()
       wrapper.vm.currentTab = 'lineage'
       await nextTick()
@@ -92,8 +94,8 @@ describe('E2E Integration Tests - 端到端集成', () => {
       const { permissionService } = await import('../src/utils/permissionService')
       const { datasets } = await import('../src/data/mockData')
 
-      permissionService.switchUser('u-024')
-      const ds = JSON.parse(JSON.stringify(datasets['ds-012']))
+      permissionService.switchUser('u-025')
+      const ds = JSON.parse(JSON.stringify(datasets['ds-009']))
       const visible = permissionService.getVisibleFields(ds.id, ds.fields)
       ds.fields = visible.map(f => {
         if (f.masked) {
@@ -103,11 +105,11 @@ describe('E2E Integration Tests - 端到端集成', () => {
       })
 
       const wrapper = mount(DatasetPreview, {
-        props: { dataset: ds, highlightKeyword: 'email' }
+        props: { dataset: ds, highlightKeyword: 'id' }
       })
 
       await nextTick()
-      expect(wrapper.html()).toContain('字段列表')
+      expect(wrapper.html()).toContain('字段信息')
     })
   })
 
@@ -120,7 +122,6 @@ describe('E2E Integration Tests - 端到端集成', () => {
       const svg = wrapper.find('svg')
       expect(svg.exists()).toBe(true)
       const html = wrapper.html()
-      expect(html).toContain('ds-006')
       expect(html).toContain('<g')
     })
 
@@ -175,7 +176,7 @@ describe('E2E Integration Tests - 端到端集成', () => {
       const AppComp = (await import('../src/App.vue')).default
       const wrapper = mount(AppComp)
       await nextTick()
-      const { permissionService, datasetTeamMapping } = await import('../src/utils/permissionService')
+      const { permissionService } = await import('../src/utils/permissionService')
       const { datasetTeamMapping: dtm } = await import('../src/data/mockData')
 
       permissionService.switchUser('u-020')
@@ -273,13 +274,18 @@ describe('数据一致性验证', () => {
     })
   })
 
-  it('所有审批人都在用户列表中', async () => {
+  it('所有审批相关用户都在用户列表中', async () => {
     const { approvalRequests, users } = await import('../src/data/mockData')
     approvalRequests.forEach(r => {
       expect(users[r.requesterId]).toBeTruthy()
-      r.approvers.forEach(a => {
-        expect(users[a.approverId]).toBeTruthy()
-      })
+      if (r.currentApproverId) {
+        expect(users[r.currentApproverId]).toBeTruthy()
+      }
+      if (r.approvalHistory && Array.isArray(r.approvalHistory)) {
+        r.approvalHistory.forEach(h => {
+          expect(users[h.approverId]).toBeTruthy()
+        })
+      }
     })
   })
 

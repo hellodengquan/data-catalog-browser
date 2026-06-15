@@ -496,3 +496,435 @@ export const datasets = {
     ]
   }
 }
+
+export const teams = {
+  'team-data-platform': {
+    id: 'team-data-platform',
+    name: '数据中台团队',
+    description: '负责数据平台基础设施建设和核心数据资产维护',
+    manager: 'u-001',
+    members: ['u-001', 'u-002', 'u-003'],
+    color: '#3b82f6'
+  },
+  'team-recommendation': {
+    id: 'team-recommendation',
+    name: '推荐算法团队',
+    description: '负责个性化推荐系统研发和算法优化',
+    manager: 'u-004',
+    members: ['u-004', 'u-005'],
+    color: '#8b5cf6'
+  },
+  'team-trading': {
+    id: 'team-trading',
+    name: '交易平台团队',
+    description: '负责电商交易系统和订单流程',
+    manager: 'u-006',
+    members: ['u-006', 'u-007', 'u-008'],
+    color: '#10b981'
+  },
+  'team-social': {
+    id: 'team-social',
+    name: '社交产品团队',
+    description: '负责社交功能和用户关系链',
+    manager: 'u-009',
+    members: ['u-009', 'u-010'],
+    color: '#f59e0b'
+  },
+  'team-im': {
+    id: 'team-im',
+    name: '即时通讯团队',
+    description: '负责消息系统和实时通讯服务',
+    manager: 'u-011',
+    members: ['u-011'],
+    color: '#ef4444'
+  },
+  'team-product': {
+    id: 'team-product',
+    name: '商品中心团队',
+    description: '负责商品信息管理和类目体系',
+    manager: 'u-012',
+    members: ['u-012', 'u-013'],
+    color: '#06b6d4'
+  },
+  'team-user': {
+    id: 'team-user',
+    name: '用户中心团队',
+    description: '负责用户账号体系和用户信息管理',
+    manager: 'u-014',
+    members: ['u-014', 'u-015'],
+    color: '#ec4899'
+  },
+  'team-finance': {
+    id: 'team-finance',
+    name: '财务支付团队',
+    description: '负责支付结算和财务系统',
+    manager: 'u-016',
+    members: ['u-016', 'u-017', 'u-018'],
+    color: '#14b8a6'
+  },
+  'team-infra': {
+    id: 'team-infra',
+    name: '基础架构团队',
+    description: '负责基础设施和运维监控',
+    manager: 'u-019',
+    members: ['u-019', 'u-020'],
+    color: '#6366f1'
+  },
+  'team-analysis': {
+    id: 'team-analysis',
+    name: '数据分析团队',
+    description: '负责数据分析、BI报表和数据洞察',
+    manager: 'u-021',
+    members: ['u-021', 'u-022', 'u-023', 'u-024'],
+    color: '#f97316'
+  }
+}
+
+export const users = {
+  'u-001': { id: 'u-001', name: '张伟', email: 'zhangwei@company.com', role: 'team_manager' },
+  'u-002': { id: 'u-002', name: '李娜', email: 'lina@company.com', role: 'engineer' },
+  'u-003': { id: 'u-003', name: '王强', email: 'wangqiang@company.com', role: 'engineer' },
+  'u-004': { id: 'u-004', name: '刘芳', email: 'liufang@company.com', role: 'team_manager' },
+  'u-005': { id: 'u-005', name: '陈明', email: 'chenming@company.com', role: 'engineer' },
+  'u-006': { id: 'u-006', name: '杨洋', email: 'yangyang@company.com', role: 'team_manager' },
+  'u-007': { id: 'u-007', name: '赵磊', email: 'zhaolei@company.com', role: 'engineer' },
+  'u-008': { id: 'u-008', name: '黄丽', email: 'huangli@company.com', role: 'engineer' },
+  'u-009': { id: 'u-009', name: '周杰', email: 'zhoujie@company.com', role: 'team_manager' },
+  'u-010': { id: 'u-010', name: '吴敏', email: 'wumin@company.com', role: 'engineer' },
+  'u-011': { id: 'u-011', name: '徐涛', email: 'xutao@company.com', role: 'team_manager' },
+  'u-012': { id: 'u-012', name: '孙浩', email: 'sunhao@company.com', role: 'team_manager' },
+  'u-013': { id: 'u-013', name: '朱琳', email: 'zhulin@company.com', role: 'engineer' },
+  'u-014': { id: 'u-014', name: '胡军', email: 'hujun@company.com', role: 'team_manager' },
+  'u-015': { id: 'u-015', name: '郭静', email: 'guojing@company.com', role: 'engineer' },
+  'u-016': { id: 'u-016', name: '林峰', email: 'linfeng@company.com', role: 'team_manager' },
+  'u-017': { id: 'u-017', name: '何雪', email: 'hexue@company.com', role: 'engineer' },
+  'u-018': { id: 'u-018', name: '高鹏', email: 'gaopeng@company.com', role: 'engineer' },
+  'u-019': { id: 'u-019', name: '罗峰', email: 'luofeng@company.com', role: 'team_manager' },
+  'u-020': { id: 'u-020', name: '郑欣', email: 'zhengxin@company.com', role: 'engineer' },
+  'u-021': { id: 'u-021', name: '马超', email: 'machao@company.com', role: 'team_manager' },
+  'u-022': { id: 'u-022', name: '梁博', email: 'liangbo@company.com', role: 'analyst' },
+  'u-023': { id: 'u-023', name: '谢婷', email: 'xieting@company.com', role: 'analyst' },
+  'u-024': { id: 'u-024', name: '曹睿', email: 'caorui@company.com', role: 'analyst' },
+  'u-025': { id: 'u-025', name: '数据管理员', email: 'admin@company.com', role: 'admin' }
+}
+
+export const datasetTeamMapping = {
+  'ds-001': { teamId: 'team-data-platform', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-002': { teamId: 'team-recommendation', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-003': { teamId: 'team-trading', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-004': { teamId: 'team-social', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-005': { teamId: 'team-im', sensitivityLevel: 'confidential', requiresApproval: true },
+  'ds-006': { teamId: 'team-trading', sensitivityLevel: 'confidential', requiresApproval: true },
+  'ds-007': { teamId: 'team-trading', sensitivityLevel: 'confidential', requiresApproval: true },
+  'ds-008': { teamId: 'team-trading', sensitivityLevel: 'confidential', requiresApproval: true },
+  'ds-009': { teamId: 'team-product', sensitivityLevel: 'public', requiresApproval: false },
+  'ds-010': { teamId: 'team-product', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-011': { teamId: 'team-product', sensitivityLevel: 'public', requiresApproval: false },
+  'ds-012': { teamId: 'team-user', sensitivityLevel: 'restricted', requiresApproval: true },
+  'ds-013': { teamId: 'team-user', sensitivityLevel: 'restricted', requiresApproval: true },
+  'ds-014': { teamId: 'team-finance', sensitivityLevel: 'restricted', requiresApproval: true },
+  'ds-015': { teamId: 'team-finance', sensitivityLevel: 'confidential', requiresApproval: true },
+  'ds-016': { teamId: 'team-finance', sensitivityLevel: 'confidential', requiresApproval: true },
+  'ds-017': { teamId: 'team-infra', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-018': { teamId: 'team-infra', sensitivityLevel: 'internal', requiresApproval: false },
+  'ds-019': { teamId: 'team-infra', sensitivityLevel: 'internal', requiresApproval: false }
+}
+
+export const sensitivityLevels = {
+  'public': { label: '公开', color: '#10b981', description: '任何人都可以访问' },
+  'internal': { label: '内部', color: '#3b82f6', description: '内部员工可访问' },
+  'confidential': { label: '机密', color: '#f59e0b', description: '需要申请审批才能访问' },
+  'restricted': { label: '受限', color: '#ef4444', description: '仅限授权团队，需要严格审批' }
+}
+
+export const fieldLineage = {
+  edges: [
+    {
+      id: 'e-001',
+      sourceDataset: 'ds-006',
+      sourceField: 'order_id',
+      targetDataset: 'ds-007',
+      targetField: 'order_id',
+      transformType: 'direct',
+      description: '订单ID直接关联'
+    },
+    {
+      id: 'e-002',
+      sourceDataset: 'ds-006',
+      sourceField: 'order_id',
+      targetDataset: 'ds-008',
+      targetField: 'order_id',
+      transformType: 'direct',
+      description: '订单ID直接关联退款'
+    },
+    {
+      id: 'e-003',
+      sourceDataset: 'ds-006',
+      sourceField: 'pay_amount',
+      targetDataset: 'ds-014',
+      targetField: 'amount',
+      transformType: 'direct',
+      description: '支付金额映射'
+    },
+    {
+      id: 'e-004',
+      sourceDataset: 'ds-006',
+      sourceField: 'user_id',
+      targetDataset: 'ds-001',
+      targetField: 'user_id',
+      transformType: 'direct',
+      description: '用户ID关联'
+    },
+    {
+      id: 'e-005',
+      sourceDataset: 'ds-009',
+      sourceField: 'product_id',
+      targetDataset: 'ds-007',
+      targetField: 'product_id',
+      transformType: 'direct',
+      description: '商品ID关联'
+    },
+    {
+      id: 'e-006',
+      sourceDataset: 'ds-009',
+      sourceField: 'product_id',
+      targetDataset: 'ds-001',
+      targetField: 'product_id',
+      transformType: 'direct',
+      description: '商品ID关联购买'
+    },
+    {
+      id: 'e-007',
+      sourceDataset: 'ds-009',
+      sourceField: 'product_id',
+      targetDataset: 'ds-002',
+      targetField: 'product_id',
+      transformType: 'direct',
+      description: '商品ID关联浏览'
+    },
+    {
+      id: 'e-008',
+      sourceDataset: 'ds-009',
+      sourceField: 'product_id',
+      targetDataset: 'ds-010',
+      targetField: 'product_id',
+      transformType: 'direct',
+      description: '商品ID关联库存'
+    },
+    {
+      id: 'e-009',
+      sourceDataset: 'ds-009',
+      sourceField: 'category_id',
+      targetDataset: 'ds-011',
+      targetField: 'category_id',
+      transformType: 'direct',
+      description: '分类ID关联'
+    },
+    {
+      id: 'e-010',
+      sourceDataset: 'ds-012',
+      sourceField: 'user_id',
+      targetDataset: 'ds-013',
+      targetField: 'user_id',
+      transformType: 'direct',
+      description: '用户ID关联地址'
+    },
+    {
+      id: 'e-011',
+      sourceDataset: 'ds-012',
+      sourceField: 'user_id',
+      targetDataset: 'ds-006',
+      targetField: 'user_id',
+      transformType: 'direct',
+      description: '用户ID关联订单'
+    },
+    {
+      id: 'e-012',
+      sourceDataset: 'ds-012',
+      sourceField: 'user_id',
+      targetDataset: 'ds-004',
+      targetField: 'follower_id',
+      transformType: 'direct',
+      description: '用户ID关联关注者'
+    },
+    {
+      id: 'e-013',
+      sourceDataset: 'ds-014',
+      sourceDataset: 'ds-014',
+      sourceField: 'order_id',
+      targetDataset: 'ds-006',
+      targetField: 'order_id',
+      transformType: 'direct',
+      description: '支付流水关联订单'
+    },
+    {
+      id: 'e-014',
+      sourceDataset: 'ds-007',
+      sourceField: 'subtotal',
+      targetDataset: 'ds-006',
+      targetField: 'total_amount',
+      transformType: 'aggregate',
+      description: '订单明细小计聚合为订单总金额'
+    },
+    {
+      id: 'e-015',
+      sourceDataset: 'ds-014',
+      sourceField: 'amount',
+      targetDataset: 'ds-015',
+      targetField: 'settlement_amount',
+      transformType: 'aggregate',
+      description: '支付金额按商家聚合为结算金额'
+    },
+    {
+      id: 'e-016',
+      sourceDataset: 'ds-006',
+      sourceField: 'order_id',
+      targetDataset: 'ds-016',
+      targetField: 'order_id',
+      transformType: 'direct',
+      description: '订单号关联发票'
+    },
+    {
+      id: 'e-017',
+      sourceDataset: 'ds-006',
+      sourceField: 'order_id',
+      targetDataset: 'ds-001',
+      targetField: 'order_id',
+      transformType: 'direct',
+      description: '订单ID关联购买记录'
+    },
+    {
+      id: 'e-018',
+      sourceDataset: 'ds-010',
+      sourceField: 'product_id',
+      targetDataset: 'ds-003',
+      targetField: 'product_id',
+      transformType: 'direct',
+      description: '商品ID关联购物车'
+    },
+    {
+      id: 'e-019',
+      sourceDataset: 'ds-012',
+      sourceField: 'user_id',
+      targetDataset: 'ds-003',
+      targetField: 'user_id',
+      transformType: 'direct',
+      description: '用户ID关联购物车'
+    },
+    {
+      id: 'e-020',
+      sourceDataset: 'ds-009',
+      sourceField: 'product_id',
+      targetDataset: 'ds-003',
+      targetField: 'product_id',
+      transformType: 'direct',
+      description: '商品ID关联购物车'
+    }
+  ],
+  transformTypes: {
+    'direct': { label: '直接映射', color: '#3b82f6' },
+    'aggregate': { label: '聚合计算', color: '#f59e0b' },
+    'join': { label: '关联合并', color: '#10b981' },
+    'transform': { label: '字段转换', color: '#8b5cf6' },
+    'filter': { label: '过滤筛选', color: '#ef4444' }
+  }
+}
+
+export const approvalRequests = [
+  {
+    id: 'apr-001',
+    datasetId: 'ds-006',
+    datasetName: '主订单表',
+    requesterId: 'u-022',
+    requesterName: '梁博',
+    requesterTeam: 'team-analysis',
+    reason: '需要分析6月份订单销售趋势，用于季度经营报告',
+    fieldsRequested: ['order_id', 'user_id', 'total_amount', 'pay_amount', 'order_status', 'create_time'],
+    status: 'pending',
+    currentApproverId: 'u-006',
+    currentApproverName: '杨洋',
+    createdAt: '2024-06-14 09:30:00',
+    expiryAt: '2024-06-21 23:59:59',
+    approvalHistory: []
+  },
+  {
+    id: 'apr-002',
+    datasetId: 'ds-012',
+    datasetName: '用户基础信息',
+    requesterId: 'u-023',
+    requesterName: '谢婷',
+    requesterTeam: 'team-analysis',
+    reason: '用户画像分析，需要关联用户等级和性别信息，进行用户分层研究',
+    fieldsRequested: ['user_id', 'gender', 'birthday', 'user_level', 'register_time'],
+    status: 'approved',
+    currentApproverId: 'u-014',
+    currentApproverName: '胡军',
+    createdAt: '2024-06-10 14:20:00',
+    approvedAt: '2024-06-11 10:15:00',
+    expiryAt: '2024-07-10 23:59:59',
+    approvalHistory: [
+      { approverId: 'u-014', approverName: '胡军', action: 'approved', comment: '同意，注意脱敏使用，不得外传手机号和邮箱。', time: '2024-06-11 10:15:00' }
+    ]
+  },
+  {
+    id: 'apr-003',
+    datasetId: 'ds-014',
+    datasetName: '支付流水',
+    requesterId: 'u-024',
+    requesterName: '曹睿',
+    requesterTeam: 'team-analysis',
+    reason: '支付转化率分析，对比不同支付渠道的成功率和金额分布',
+    fieldsRequested: ['pay_id', 'order_id', 'user_id', 'amount', 'pay_method', 'pay_status', 'create_time', 'success_time'],
+    status: 'rejected',
+    currentApproverId: 'u-016',
+    currentApproverName: '林峰',
+    createdAt: '2024-06-12 16:45:00',
+    rejectedAt: '2024-06-13 09:00:00',
+    expiryAt: '2024-06-19 23:59:59',
+    approvalHistory: [
+      { approverId: 'u-016', approverName: '林峰', action: 'rejected', comment: '支付流水数据敏感度过高，请申请使用脱敏后的聚合报表。如有特殊需要请联系财务总监面谈。', time: '2024-06-13 09:00:00' }
+    ]
+  },
+  {
+    id: 'apr-004',
+    datasetId: 'ds-005',
+    datasetName: '消息发送记录',
+    requesterId: 'u-005',
+    requesterName: '陈明',
+    requesterTeam: 'team-recommendation',
+    reason: '优化基于消息互动的推荐算法，需要分析用户消息行为模式',
+    fieldsRequested: ['sender_id', 'receiver_id', 'send_time', 'is_read', 'msg_type'],
+    status: 'pending',
+    currentApproverId: 'u-011',
+    currentApproverName: '徐涛',
+    createdAt: '2024-06-15 11:00:00',
+    expiryAt: '2024-06-22 23:59:59',
+    approvalHistory: []
+  },
+  {
+    id: 'apr-005',
+    datasetId: 'ds-013',
+    datasetName: '用户地址',
+    requesterId: 'u-022',
+    requesterName: '梁博',
+    requesterTeam: 'team-analysis',
+    reason: '物流配送效率分析，需要用户所在省份城市信息',
+    fieldsRequested: ['user_id', 'province', 'city', 'district'],
+    status: 'approved',
+    currentApproverId: 'u-014',
+    currentApproverName: '胡军',
+    createdAt: '2024-06-08 13:30:00',
+    approvedAt: '2024-06-08 17:00:00',
+    expiryAt: '2024-07-08 23:59:59',
+    approvalHistory: [
+      { approverId: 'u-014', approverName: '胡军', action: 'approved', comment: '同意，但禁止获取详细地址（街道、门牌号），仅可使用省市区三级。', time: '2024-06-08 17:00:00' }
+    ]
+  }
+]
+
+export const approvalStatusMap = {
+  'pending': { label: '待审批', color: '#f59e0b', icon: 'Clock' },
+  'approved': { label: '已通过', color: '#10b981', icon: 'CheckCircle' },
+  'rejected': { label: '已拒绝', color: '#ef4444', icon: 'XCircle' },
+  'expired': { label: '已过期', color: '#6b7280', icon: 'AlertCircle' }
+}
